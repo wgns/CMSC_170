@@ -10,19 +10,28 @@ public class Tile {
     private double gn;
     private double hn;
     private double fn;
+    private Tile parent;
 
     public Tile() {
 
     }
 
-    public Tile(char type, boolean visited, int row, int col) {
+    public Tile(char type, int row, int col) {                      // tile initialization
         this.row = row;
         this.col = col;
         setType(type);
-        setVisited(visited);
-        setGn(1);
+        setVisited(false);
+        setGn(0);
         setHn(0);
         setFn();
+        parent = null;
+    }
+
+    public void editTile(double gn, Tile goal, int choice, Tile parent) {        // for possible paths
+        setGn(gn);
+        setHn(goal, choice);
+        setFn();
+        setParent(parent);
     }
 
     public char getType() {
@@ -68,10 +77,10 @@ public class Tile {
     public void setHn(Tile goal, int choice) {
         switch (choice) {
             case 1:     // Manhattan
-                this.hn = abs(getRow() - goal.getRow()) + abs(getCol() - goal.getCol());
+                hn = abs(getRow() - goal.getRow()) + abs(getCol() - goal.getCol());
                 break;
             case 2:     // Straight-Line
-                this.hn = max(abs(getRow() - goal.getRow()), abs(getCol() - goal.getCol()));
+                hn = max(abs(getRow() - goal.getRow()), abs(getCol() - goal.getCol()));
         }
     }
 
@@ -80,6 +89,14 @@ public class Tile {
     }
 
     public void setFn() {
-        this.fn = gn + hn;
+        fn = gn + hn;
+    }
+
+    public Tile getParent() {
+        return parent;
+    }
+
+    public void setParent(Tile parent) {
+        this.parent = parent;
     }
 }

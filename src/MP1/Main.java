@@ -4,30 +4,35 @@ import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        Maze maze;
-        String fileName;
-        int choice = -1;
+        int pick;      // part number
+        int choice;    // heuristic
 
         do {
-            System.out.println("\tMAZE SEARCH HOORAY!\n1. Basic Pathfinding\n2. Search with Multiple Goals\n0. Exit");
+            System.out.println("\n\tMAZE SEARCH HOORAY!\n1. Basic Pathfinding\n2. Search with Multiple Goals\n0. Exit");
+            Maze maze;
+            Maze clone;
+            Tile current;
+            String fileName;
+            Scanner scanner = new Scanner(System.in);
 
             do {
+                pick = -1;
                 System.out.print("Enter choice here: ");
 
                 try {
-                    choice = scanner.nextInt();
+                    pick = scanner.nextInt();
                 } catch (InputMismatchException ime) {
                     scanner.nextLine();
                     System.out.println("Please enter a valid input.");
                 }
-            } while (choice < 0 || choice > 2);
+            } while (pick < 0 || pick > 2);
 
-            switch (choice) {
+            switch (pick) {
                 case 1:     // Basic Pathfinding
                     System.out.println("\n\tBASIC PATHFINDING\n1. Tiny Maze\n2. Small Maze\n3. Medium Maze\n4. Big Maze\n5. Open Maze\n0. Exit");
 
                     do {
+                        choice = -1;
                         System.out.print("Enter choice here: ");
 
                         try {
@@ -66,6 +71,7 @@ public class Main {
                     System.out.println("\n\tHEURISTICS\n1. Manhattan Distance\n2. Straight-Line Distance\n0. Exit");
 
                     do {
+                        choice = -1;
                         System.out.print("Which heuristic should we use? ");
 
                         try {
@@ -75,20 +81,12 @@ public class Main {
                             System.out.println("Please enter a valid input.");
                         }
                     } while (choice < 0 || choice > 2);
-
-                    switch (choice) {
-                        case 1:
-                            break;
-                        case 2:
-                            break;
-                        default:
-                            return;
-                    }
                     break;
                 case 2:     // Search with Multiple Goals
                     System.out.println("\n\tSEARCH WITH MULTIPLE GOALS\n1. Small Search\n2. Medium Search\n3. Big Search\n4. Tricky Search\n0. Exit");
 
                     do {
+                        choice = -1;
                         System.out.print("Enter choice here: ");
 
                         try {
@@ -97,32 +95,141 @@ public class Main {
                             scanner.nextLine();
                             System.out.println("Please enter a valid input.");
                         }
-
-                        switch (choice) {       // File reading, initialize maze
-                            case 1:     // Small Search
-                                maze = new Maze(5, 20);
-                                fileName = "src/Mazes/smallSearch.lay.txt";
-                                break;
-                            case 2:     // Medium Search
-                                maze = new Maze(15, 31);
-                                fileName = "src/Mazes/mediumSearch.lay.txt";
-                                break;
-                            case 3:     // Big Search
-                                maze = new Maze(29, 31);
-                                fileName = "src/Mazes/bigSearch.lay.txt";
-                                break;
-                            case 4:     // Tricky Search
-                                maze = new Maze(7, 20);
-                                fileName = "src/Mazes/trickySearch.lay.txt";
-                                break;
-                            default:    // Exit
-                                return;
-                        }
                     } while (choice < 0 || choice > 4);
+
+                    switch (choice) {       // File reading, initialize maze
+                        case 1:     // Small Search
+                            maze = new Maze(5, 20);
+                            fileName = "src/Mazes/smallSearch.lay.txt";
+                            break;
+                        case 2:     // Medium Search
+                            maze = new Maze(8, 31);
+                            fileName = "src/Mazes/mediumSearch.lay.txt";
+                            break;
+                        case 3:     // Big Search
+                            maze = new Maze(15, 31);
+                            fileName = "src/Mazes/bigSearch.lay.txt";
+                            break;
+                        case 4:     // Tricky Search
+                            maze = new Maze(7, 20);
+                            fileName = "src/Mazes/trickySearch.lay.txt";
+                            break;
+                        default:    // Exit
+                            return;
+                    }
+
+                    System.out.println("\n\tHEURISTICS\n1. Manhattan Distance\n2. Straight-Line Distance\n0. Exit");
+
+                    do {
+                        choice = -1;
+                        System.out.print("Which heuristic should we use? ");
+
+                        try {
+                            choice = scanner.nextInt();
+                        } catch (InputMismatchException ime) {
+                            scanner.nextLine();
+                            System.out.println("Please enter a valid input.");
+                        }
+                    } while (choice < 0 || choice > 2);
                     break;
                 default:    // Exit
                     return;
             }
-        } while (choice != 0);
+
+            ArrayList<Tile> open = new ArrayList<>();
+            ArrayList<Tile> closed = new ArrayList<>();
+            ArrayList<Tile> goals = new ArrayList<>();
+            int pathCost = 0;
+            int goalNum = 1;    // for multiple goal count
+
+            maze.set(fileName);
+            clone = maze;
+            Tile goal = maze.getGoal();
+            current = maze.getOrigin();
+            current.editTile(0, goal, choice, null);
+            open.add(current);
+
+            while (true) {                                                                                              // kapoy na hunahuna huhuhuh
+                current.setVisited(true);
+                closed.add(current);
+                ArrayList<Tile> next = maze.openPaths(current, choice, pick);     // get possible paths
+
+                for (Tile tileNext : next) {          // check if next possible path is in the open list already. if yes, check which has a lower g(n) cost
+                    for (Tile tileOpen : open) {
+                        if (tileNext.getRow() == tileOpen.getRow() && tileNext.getCol() == tileOpen.getCol()) {
+                            if (tileNext.getGn() > tileOpen.getGn()) {
+                                next.remove(tileNext);
+                            }
+                        }
+                    }
+                }
+
+                open.addAll(next);                                          // add possible paths to open list
+                open.sort((o1, o2) -> {
+                    if (o1.getFn() < o2.getFn()) {              // Sort by f(n)
+                        return -1;
+                    } else if (o1.getFn() > o2.getFn()) {
+                        return 1;
+                    }
+
+                    if (o1.getRow() < o2.getRow()) {            // if f(n) are equal, sort by row order
+                        return -1;
+                    } else if (o1.getRow() > o2.getRow()) {
+                        return 1;
+                    }
+
+                    if (o1.getCol() < o2.getCol()) {            // if rows are also equal, sort by column order. sharo
+                        return -1;
+                    } else if (o1.getCol() > o2.getCol()) {
+                        return 1;
+                    }
+
+                    return 0;
+                });
+
+                if ((current == goal && pick == 1) || (pick == 2 && goals.isEmpty())) {     // check if you've reached goal
+                    break;
+                }
+
+                if (pick == 2) {    // display per move. uh                                                             // AROUND DIRI NGA PART ANG PARA SA PART TWO HELP
+                    maze.print();
+
+                    // display goals, next goal, etc
+
+                    System.out.println("Press ENTER to continue");
+                    scanner.nextLine();
+
+                    goals = maze.goals(choice, current);
+                    goal = goals.get(0);
+
+                    if (current.getType() == '.') {
+                        if (goalNum < 10 || (goalNum > 87 && goalNum < 98)) {
+                            current.setType((char) (goalNum + 48));
+                        } else if (goalNum < 36) {
+                            current.setType((char) (goalNum + 87));
+                        } else if (goalNum < 62) {
+                            current.setType((char) (goalNum + 3));
+                        }
+
+                        goalNum++;
+                    }
+                }
+
+                for (Tile tileNext : open) {
+                    if (!tileNext.isVisited()) {
+                        current = tileNext;
+                        break;
+                    }
+                }
+            }
+
+            clone.print(current);
+
+            for (; current.getParent() != null; pathCost++) {
+                current = current.getParent();
+            }
+
+            System.out.println("\nPath Cost: " + pathCost + "\nNo. of nodes expanded: " + closed.size() + "\nSize of frontier: " + open.size());
+        } while (choice != 0 || pick != 0);
     }
 }
