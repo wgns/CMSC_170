@@ -67,20 +67,6 @@ public class Main {
                         default:    // Exit
                             return;
                     }
-
-                    System.out.println("\n\tHEURISTICS\n1. Manhattan Distance\n2. Straight-Line Distance\n0. Exit");
-
-                    do {
-                        choice = -1;
-                        System.out.print("Which heuristic should we use? ");
-
-                        try {
-                            choice = scanner.nextInt();
-                        } catch (InputMismatchException ime) {
-                            scanner.nextLine();
-                            System.out.println("Please enter a valid input.");
-                        }
-                    } while (choice < 0 || choice > 2);
                     break;
                 case 2:     // Search with Multiple Goals
                     System.out.println("\n\tSEARCH WITH MULTIPLE GOALS\n1. Small Search\n2. Medium Search\n3. Big Search\n4. Tricky Search\n0. Exit");
@@ -117,24 +103,24 @@ public class Main {
                         default:    // Exit
                             return;
                     }
-
-                    System.out.println("\n\tHEURISTICS\n1. Manhattan Distance\n2. Straight-Line Distance\n0. Exit");
-
-                    do {
-                        choice = -1;
-                        System.out.print("Which heuristic should we use? ");
-
-                        try {
-                            choice = scanner.nextInt();
-                        } catch (InputMismatchException ime) {
-                            scanner.nextLine();
-                            System.out.println("Please enter a valid input.");
-                        }
-                    } while (choice < 0 || choice > 2);
                     break;
                 default:    // Exit
                     return;
             }
+
+            System.out.println("\n\tHEURISTICS\n1. Manhattan Distance\n2. Straight-Line Distance\n0. Exit");
+
+            do {
+                choice = -1;
+                System.out.print("Which heuristic should we use? ");
+
+                try {
+                    choice = scanner.nextInt();
+                } catch (InputMismatchException ime) {
+                    scanner.nextLine();
+                    System.out.println("Please enter a valid input.");
+                }
+            } while (choice < 0 || choice > 2);
 
             ArrayList<Tile> open = new ArrayList<>();
             ArrayList<Tile> closed = new ArrayList<>();
