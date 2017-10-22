@@ -16,7 +16,7 @@ public class Tile {
 
     }
 
-    public Tile(char type, int row, int col) {                      // tile initialization
+    public Tile(char type, int row, int col) {                                  // tile initialization
         this.row = row;
         this.col = col;
         setType(type);
@@ -24,7 +24,7 @@ public class Tile {
         setGn(0);
         setHn(0);
         setFn();
-        parent = null;
+        setParent(null);
     }
 
     public void editTile(double gn, Tile goal, int choice, Tile parent) {        // for possible paths
@@ -75,13 +75,7 @@ public class Tile {
     }
 
     public void setHn(Tile goal, int choice) {
-        switch (choice) {
-            case 1:     // Manhattan
-                hn = abs(getRow() - goal.getRow()) + abs(getCol() - goal.getCol());
-                break;
-            case 2:     // Straight-Line
-                hn = max(abs(getRow() - goal.getRow()), abs(getCol() - goal.getCol()));
-        }
+        hn = (choice == 1)? (abs(getRow() - goal.getRow()) + abs(getCol() - goal.getCol())) : (max(abs(getRow() - goal.getRow()), abs(getCol() - goal.getCol())));
     }
 
     public double getFn() {

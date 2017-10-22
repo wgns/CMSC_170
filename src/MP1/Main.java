@@ -4,16 +4,17 @@ import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
-        int pick;      // part number
-        int choice;    // heuristic
+        int pick, choice;    // part 1 or 2, heuristic
 
-        do {
-            System.out.println("\n\tMAZE SEARCH HOORAY!\n1. Basic Pathfinding\n2. Search with Multiple Goals\n0. Exit");
-            Maze maze;
-            Maze clone;
+        while (true){
+            Maze maze, clone;
             Tile current;
             String fileName;
             Scanner scanner = new Scanner(System.in);
+
+            System.out.print("\nPress ENTER to continue");
+            scanner.nextLine();
+            System.out.println("\n\tMAZE SEARCH HOORAY!\n1. Basic Pathfinding\n2. Search with Multiple Goals\n0. Exit");
 
             do {
                 pick = -1;
@@ -122,25 +123,23 @@ public class Main {
                 }
             } while (choice < 0 || choice > 2);
 
-            ArrayList<Tile> open = new ArrayList<>();
-            ArrayList<Tile> closed = new ArrayList<>();
-            ArrayList<Tile> goals = new ArrayList<>();
+            ArrayList<Tile> open = new ArrayList<>(), closed = new ArrayList<>(), goalsReached = new ArrayList<>(), goals;
             int pathCost = 0;
-            int goalNum = 1;    // for multiple goal count
 
             maze.set(fileName);
             clone = maze;
-            Tile goal = maze.getGoal();
             current = maze.getOrigin();
+            goals = maze.goals(choice, current);
+            Tile goal = (pick == 1)? maze.getGoal() : goals.get(0);
             current.editTile(0, goal, choice, null);
             open.add(current);
 
             while (true) {                                                                                              // kapoy na hunahuna huhuhuh
                 current.setVisited(true);
                 closed.add(current);
-                ArrayList<Tile> next = maze.openPaths(current, choice, pick);     // get possible paths
+                ArrayList<Tile> next = maze.openPaths(current, choice, pick, goal);     // get possible paths
 
-                for (Tile tileNext : next) {          // check if next possible path is in the open list already. if yes, check which has a lower g(n) cost
+                for (Tile tileNext : next) {                                            // check if next possible path is in the open list already. if yes, check which has a lower g(n) cost
                     for (Tile tileOpen : open) {
                         if (tileNext.getRow() == tileOpen.getRow() && tileNext.getCol() == tileOpen.getCol()) {
                             if (tileNext.getGn() > tileOpen.getGn()) {
@@ -150,8 +149,8 @@ public class Main {
                     }
                 }
 
-                open.addAll(next);                                          // add possible paths to open list
-                open.sort((o1, o2) -> {
+                open.addAll(next);                              // add possible paths to open list
+                open.sort((Tile o1, Tile o2) -> {
                     if (o1.getFn() < o2.getFn()) {              // Sort by f(n)
                         return -1;
                     } else if (o1.getFn() > o2.getFn()) {
@@ -173,49 +172,64 @@ public class Main {
                     return 0;
                 });
 
-                if ((current == goal && pick == 1) || (pick == 2 && goals.isEmpty())) {     // check if you've reached goal
+                if (pick == 2) {                                                                                        // TABANG HERE DMD
+                    goals = maze.goals(choice, current);        // get list of unvisited goals
+
+                    for (Tile tile : goals) {
+                        if ((tile.getRow() == current.getRow()) && (tile.getCol() == current.getCol())) {
+                            goalsReached.add(current);
+                            goals.remove(tile);
+                        }
+                    }
+
+                    if (!goals.isEmpty()) {
+                        goal = goals.get(0);                        // get nearest goal from current
+                    }
+
+                    pathCost++;
+                }
+
+                if ((pick == 1 && current.getType() == '.') || (pick == 2 && goals.isEmpty())) {     // check if you've reached goal
                     break;
                 }
 
-                if (pick == 2) {    // display per move. uh                                                             // AROUND DIRI NGA PART ANG PARA SA PART TWO HELP
-                    maze.print();
-
-                    // display goals, next goal, etc
-
-                    System.out.println("Press ENTER to continue");
-                    scanner.nextLine();
-
-                    goals = maze.goals(choice, current);
-                    goal = goals.get(0);
-
-                    if (current.getType() == '.') {
-                        if (goalNum < 10 || (goalNum > 87 && goalNum < 98)) {
-                            current.setType((char) (goalNum + 48));
-                        } else if (goalNum < 36) {
-                            current.setType((char) (goalNum + 87));
-                        } else if (goalNum < 62) {
-                            current.setType((char) (goalNum + 3));
+                if (pick == 1) {
+                    for (Tile tileNext : open) {
+                        if (!tileNext.isVisited()) {
+                            current = tileNext;
+                            break;
                         }
-
-                        goalNum++;
                     }
-                }
-
-                for (Tile tileNext : open) {
-                    if (!tileNext.isVisited()) {
-                        current = tileNext;
-                        break;
-                    }
+                } else {
+                    current = next.get(0);
                 }
             }
 
-            clone.print(current);
+            if (pick == 1) {
+                clone.print(current);
 
-            for (; current.getParent() != null; pathCost++) {
-                current = current.getParent();
+                for (Tile temp = current; temp.getParent() != null; pathCost++) {
+                    temp = temp.getParent();
+                }
+            } else {
+                maze.print2(goalsReached);
             }
 
-            System.out.println("\nPath Cost: " + pathCost + "\nNo. of nodes expanded: " + closed.size() + "\nSize of frontier: " + open.size());
-        } while (choice != 0 || pick != 0);
+            System.out.println("\nPath Cost: " + pathCost + " (start excluded, goal/s included)\nNo. of nodes expanded: " + closed.size() + "\nSize of frontier: " + open.size());
+
+            if (pick == 2) {
+                System.out.print("Order of goals reached: ");
+
+                for (int i = 0; i < goalsReached.size(); i++) {
+                    System.out.print("[" + goalsReached.get(i).getRow() + ", " + goalsReached.get(i).getCol() + "]");
+
+                    if (i < goalsReached.size() - 1) {
+                        System.out.print(", ");
+                    }
+                }
+
+                System.out.println();
+            }
+        }
     }
 }
