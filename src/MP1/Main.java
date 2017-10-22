@@ -172,7 +172,7 @@ public class Main {
                     return 0;
                 });
 
-                if (pick == 2) {                                                                                        // TABANG HERE DMD
+                if (pick == 2) {                                                                                        // TABANG HERE DMD pasabta ko nganong di masudlan ang goalsReached ughhh
                     goals = maze.goals(choice, current);        // get list of unvisited goals
 
                     for (Tile tile : goals) {
