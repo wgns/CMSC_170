@@ -12,8 +12,6 @@ public class Main {
             String fileName;
             Scanner scanner = new Scanner(System.in);
 
-            System.out.print("\nPress ENTER to continue");
-            scanner.nextLine();
             System.out.println("\n\tMAZE SEARCH HOORAY!\n1. Basic Pathfinding\n2. Search with Multiple Goals\n0. Exit");
 
             do {
@@ -124,6 +122,7 @@ public class Main {
             } while (choice < 0 || choice > 2);
 
             ArrayList<Tile> open = new ArrayList<>(), closed = new ArrayList<>(), goalsReached = new ArrayList<>(), goals;
+            boolean clear = false;
             int pathCost = 0;
 
             maze.set(fileName);
@@ -131,6 +130,7 @@ public class Main {
             current = maze.getOrigin();
             goals = maze.goals(choice, current);
             Tile goal = (pick == 1)? maze.getGoal() : goals.get(0);
+
             current.editTile(0, goal, choice, null);
             open.add(current);
 
@@ -138,17 +138,22 @@ public class Main {
                 current.setVisited(true);
                 closed.add(current);
                 ArrayList<Tile> next = maze.openPaths(current, choice, pick, goal);     // get possible paths
+                ArrayList<Tile> toBeRemovedFromNext = new ArrayList<>(), toBeRemovedFromOpen = new ArrayList<>();
 
                 for (Tile tileNext : next) {                                            // check if next possible path is in the open list already. if yes, check which has a lower g(n) cost
                     for (Tile tileOpen : open) {
                         if (tileNext.getRow() == tileOpen.getRow() && tileNext.getCol() == tileOpen.getCol()) {
                             if (tileNext.getGn() > tileOpen.getGn()) {
-                                next.remove(tileNext);
+                                toBeRemovedFromNext.add(tileNext);
+                            } else if (tileNext.getGn() < tileOpen.getGn()) {
+                                toBeRemovedFromOpen.add(tileOpen);
                             }
                         }
                     }
                 }
 
+                next.removeAll(toBeRemovedFromNext);
+                open.removeAll(toBeRemovedFromOpen);
                 open.addAll(next);                              // add possible paths to open list
                 open.sort((Tile o1, Tile o2) -> {
                     if (o1.getFn() < o2.getFn()) {              // Sort by f(n)
@@ -172,15 +177,47 @@ public class Main {
                     return 0;
                 });
 
-                if (pick == 2) {                                                                                        // TABANG HERE DMD pasabta ko nganong di masudlan ang goalsReached ughhh
-                    goals = maze.goals(choice, current);        // get list of unvisited goals
-
+                if (pick == 2) {
                     if (current.getType() == '.') {
                         goalsReached.add(current);
                     }
 
+                    goals.clear();
+                    goals = maze.goals(choice, current);
+
+                    for (Tile temp1 : open) {
+                        for (Tile temp2 : goals) {
+                            if (temp1.equals(temp2)) {
+                                temp2.setGn(temp1.getGn());
+                                temp2.setFn();
+                            }
+                        }
+                    }
+
+                    goals.sort((o1, o2) -> {
+                        if (o1.getFn() < o2.getFn()) {                                      // Sort by f(n)
+                            return -1;
+                        } else if (o1.getFn() > o2.getFn()) {
+                            return 1;
+                        }
+
+                        if (o1.getRow() < o2.getRow()) {                                    // if f(n) are equal, sort by row order
+                            return -1;
+                        } else if (o1.getRow() > o2.getRow()) {
+                            return 1;
+                        }
+
+                        if (o1.getCol() < o2.getCol()) {                                    // if rows are also equal, sort by column order. sharo
+                            return -1;
+                        } else if (o1.getCol() > o2.getCol()) {
+                            return 1;
+                        }
+
+                        return 0;
+                    });
+
                     if (!goals.isEmpty()) {
-                        goal = goals.get(0);                        // get nearest goal from current
+                        goal = goals.get(0);
                     }
 
                     pathCost++;
@@ -190,26 +227,22 @@ public class Main {
                     break;
                 }
 
-                if (pick == 1) {
-                    for (Tile tileNext : open) {
-                        if (!tileNext.isVisited()) {
-                            current = tileNext;
-                            break;
-                        }
+                for (Tile tileNext : open) {
+                    if ((!tileNext.isVisited())) {
+                        current = tileNext;
+                        break;
                     }
-                } else {
-                    current = next.get(0);
                 }
             }
 
             if (pick == 1) {
                 clone.print(current);
 
-                for (Tile temp = current; temp.getParent() != null; pathCost++) {
+                for (Tile temp = current; temp.getParent() != null; pathCost++) {       // get path cost
                     temp = temp.getParent();
                 }
             } else {
-                maze.print2(goalsReached);
+                clone.print2(goalsReached);
             }
 
             System.out.println("\nPath Cost: " + pathCost + " (start excluded, goal/s included)\nNo. of nodes expanded: " + closed.size() + "\nSize of frontier: " + open.size());
@@ -227,6 +260,10 @@ public class Main {
 
                 System.out.println();
             }
+
+            scanner.nextLine();
+            System.out.println("\nPress ENTER to continue");
+            scanner.nextLine();
         }
     }
 }
