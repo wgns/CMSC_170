@@ -175,11 +175,8 @@ public class Main {
                 if (pick == 2) {                                                                                        // TABANG HERE DMD pasabta ko nganong di masudlan ang goalsReached ughhh
                     goals = maze.goals(choice, current);        // get list of unvisited goals
 
-                    for (Tile tile : goals) {
-                        if ((tile.getRow() == current.getRow()) && (tile.getCol() == current.getCol())) {
-                            goalsReached.add(current);
-                            goals.remove(tile);
-                        }
+                    if (current.getType() == '.') {
+                        goalsReached.add(current);
                     }
 
                     if (!goals.isEmpty()) {
