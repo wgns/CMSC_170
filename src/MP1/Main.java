@@ -45,23 +45,23 @@ public class Main {
                     switch (choice) {       // File reading, initialize maze
                         case 1:     // Tiny Maze
                             maze = new Maze(7, 7);
-                            fileName = "src/Mazes/tinyMaze.lay.txt";
+                            fileName = "src/MP1.Mazes/tinyMaze.lay.txt";
                             break;
                         case 2:     // Small Maze
                             maze = new Maze(10, 22);
-                            fileName = "src/Mazes/smallMaze.lay.txt";
+                            fileName = "src/MP1.Mazes/smallMaze.lay.txt";
                             break;
                         case 3:     // Medium Maze
                             maze = new Maze(18, 36);
-                            fileName = "src/Mazes/mediumMaze.lay.txt";
+                            fileName = "src/MP1.Mazes/mediumMaze.lay.txt";
                             break;
                         case 4:     // Big Maze
                             maze = new Maze(37, 37);
-                            fileName = "src/Mazes/bigMaze.lay.txt";
+                            fileName = "src/MP1.Mazes/bigMaze.lay.txt";
                             break;
                         case 5:     // Open Maze
                             maze = new Maze(23, 37);
-                            fileName = "src/Mazes/openMaze.lay.txt";
+                            fileName = "src/MP1.Mazes/openMaze.lay.txt";
                             break;
                         default:    // Exit
                             return;
@@ -85,19 +85,19 @@ public class Main {
                     switch (choice) {       // File reading, initialize maze
                         case 1:     // Small Search
                             maze = new Maze(5, 20);
-                            fileName = "src/Mazes/smallSearch.lay.txt";
+                            fileName = "src/MP1.Mazes/smallSearch.lay.txt";
                             break;
                         case 2:     // Medium Search
                             maze = new Maze(8, 31);
-                            fileName = "src/Mazes/mediumSearch.lay.txt";
+                            fileName = "src/MP1.Mazes/mediumSearch.lay.txt";
                             break;
                         case 3:     // Big Search
                             maze = new Maze(15, 31);
-                            fileName = "src/Mazes/bigSearch.lay.txt";
+                            fileName = "src/MP1.Mazes/bigSearch.lay.txt";
                             break;
                         case 4:     // Tricky Search
                             maze = new Maze(7, 20);
-                            fileName = "src/Mazes/trickySearch.lay.txt";
+                            fileName = "src/MP1.Mazes/trickySearch.lay.txt";
                             break;
                         default:    // Exit
                             return;
@@ -122,7 +122,6 @@ public class Main {
             } while (choice < 0 || choice > 2);
 
             ArrayList<Tile> open = new ArrayList<>(), closed = new ArrayList<>(), goalsReached = new ArrayList<>(), goals;
-            boolean clear = false;
             int pathCost = 0;
 
             maze.set(fileName);
@@ -130,7 +129,6 @@ public class Main {
             current = maze.getOrigin();
             goals = maze.goals(choice, current);
             Tile goal = (pick == 1)? maze.getGoal() : goals.get(0);
-
             current.editTile(0, goal, choice, null);
             open.add(current);
 
@@ -138,22 +136,24 @@ public class Main {
                 current.setVisited(true);
                 closed.add(current);
                 ArrayList<Tile> next = maze.openPaths(current, choice, pick, goal);     // get possible paths
-                ArrayList<Tile> toBeRemovedFromNext = new ArrayList<>(), toBeRemovedFromOpen = new ArrayList<>();
+//                ArrayList<Tile> toBeRemovedFromNext = new ArrayList<>(), toBeRemovedFromOpen = new ArrayList<>();
 
                 for (Tile tileNext : next) {                                            // check if next possible path is in the open list already. if yes, check which has a lower g(n) cost
                     for (Tile tileOpen : open) {
                         if (tileNext.getRow() == tileOpen.getRow() && tileNext.getCol() == tileOpen.getCol()) {
                             if (tileNext.getGn() > tileOpen.getGn()) {
-                                toBeRemovedFromNext.add(tileNext);
-                            } else if (tileNext.getGn() < tileOpen.getGn()) {
-                                toBeRemovedFromOpen.add(tileOpen);
+//                                toBeRemovedFromNext.add(tileNext);
+//                            } else if (tileNext.getGn() < tileOpen.getGn()) {
+//                                toBeRemovedFromOpen.add(tileOpen);
+//                            }
+                                next.remove(tileNext);
                             }
                         }
                     }
                 }
 
-                next.removeAll(toBeRemovedFromNext);
-                open.removeAll(toBeRemovedFromOpen);
+//                next.removeAll(toBeRemovedFromNext);
+//                open.removeAll(toBeRemovedFromOpen);
                 open.addAll(next);                              // add possible paths to open list
                 open.sort((Tile o1, Tile o2) -> {
                     if (o1.getFn() < o2.getFn()) {              // Sort by f(n)
@@ -221,6 +221,8 @@ public class Main {
                     }
 
                     pathCost++;
+
+                    System.out.println("infinite loop? unfortunately di. so ngano di muprint");
                 }
 
                 if ((pick == 1 && current.getType() == '.') || (pick == 2 && goals.isEmpty())) {     // check if you've reached goal
@@ -236,13 +238,13 @@ public class Main {
             }
 
             if (pick == 1) {
-                clone.print(current);
+                maze.print(current);
 
                 for (Tile temp = current; temp.getParent() != null; pathCost++) {       // get path cost
                     temp = temp.getParent();
                 }
             } else {
-                clone.print2(goalsReached);
+                maze.print2(goalsReached, current);
             }
 
             System.out.println("\nPath Cost: " + pathCost + " (start excluded, goal/s included)\nNo. of nodes expanded: " + closed.size() + "\nSize of frontier: " + open.size());

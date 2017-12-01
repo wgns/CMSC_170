@@ -133,7 +133,7 @@ public class Maze {
         }
     }
 
-    public void print2(ArrayList<Tile> goalsReached) {              // it works afaik
+    public void print2(ArrayList<Tile> goalsReached, Tile tile) {              // it works afaik
         for (int goalNum = 1, i = 0; i < goalsReached.size(); goalNum++, i++) {
             Tile current = goalsReached.get(i);
 
@@ -164,12 +164,12 @@ public class Maze {
             }
         }
 
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                if (board[i][j].getType() == ' ' && board[i][j].isVisited()) {
-                    board[i][j].setType('.');
-                }
+        while (tile.getParent() != null) {
+            if (tile.getType() == ' ') {
+                board[tile.getRow()][tile.getCol()].setType('.');
             }
+
+            tile = tile.getParent();
         }
 
         for (int i = 0; i < rows; i++) {
