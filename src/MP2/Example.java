@@ -1,8 +1,8 @@
 package MP2;
 
 public class Example {
-    private double x;
-    private double y;
+    private Double x;
+    private Double y;
 
     public Example(double x, double y) {
         this.x = x;

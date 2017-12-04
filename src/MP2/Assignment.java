@@ -1,7 +1,7 @@
 package MP2;
 
 public class Assignment {
-    private double minimum;
+    private Double minimum;
     private int group;
 
     public Assignment(double minimum, int group) {
